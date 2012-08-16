@@ -1,0 +1,16 @@
+We need::
+
+ - user to give us a branch to control landings on
+ - a way to get MPs approved for landing
+ - a thing that gets the MP:
+   - branch target
+   - merge src
+   - (handle conflicts)
+   - runs tests
+     - HOW? tarmac_tests.sh for now? configurable?
+   - on success, merge
+   - on failure, post output, update MP
+ - oauth configuration
+
+
+ - given 2 bzr branches, a test command, and something to do on failure:
