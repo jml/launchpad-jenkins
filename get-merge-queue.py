@@ -53,7 +53,8 @@ def _iter_merge_proposals(launchpad, branch_url):
 
 
 def lp_to_dict(lp_obj):
-    return lp_obj._wadl_resource.representation
+    lp_obj._ensure_representation()
+    return dict(lp_obj._wadl_resource.representation)
 
 
 def get_merge_proposals(launchpad, branch_url):
