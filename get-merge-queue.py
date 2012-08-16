@@ -29,6 +29,7 @@ def make_arg_parser():
     parser = argparse.ArgumentParser(
         description="Get merge proposals against a branch")
     parser.add_argument('branch', type=str, help="the branch")
+    parser.add_argument('--pretty', action='store_true')
     parser.add_argument(
         '--lp-instance', choices=uris.service_roots,
         default='production',
@@ -76,8 +77,11 @@ def main(args):
     output = sys.stdout
     service_root = uris.service_roots[args.lp_instance]
     launchpad = get_launchpad(service_root)
-    merge_proposals = get_merge_proposals(launchpad, args.branch)
-    json.dump(list(merge_proposals), output)
+    merge_proposals = list(get_merge_proposals(launchpad, args.branch))
+    if args.pretty:
+        json.dump(merge_proposals, output, indent=4, sort_keys=True)
+    else:
+        json.dump(merge_proposals, output)
     output.write('\n')
 
 
