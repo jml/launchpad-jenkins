@@ -44,12 +44,6 @@ def get_launchpad(service_root):
         APP_NAME, service_root, CACHE_DIR, version="devel")
 
 
-def _iter_merge_proposals(launchpad, branch_url):
-    branch = launchpad.branches.getByUrl(url=branch_url)
-    if branch is None:
-        raise UserError("Not a valid branch: %r" % (branch_url,))
-    for b in branch.landing_candidates:
-        yield b
 # XXX: I think if I had a function that took a URL (& probably some creds) and
 # returned a from-JSON data structure this would all get much simpler.
 
@@ -70,25 +64,32 @@ def lp_to_dict_expanded(lp_obj, attributes):
         expand collections, make sure the key ends with '/'.
     """
     lp_dict = lp_to_dict(lp_obj)
-    for attr in attributes:
-        lp_dict[attr] = lp_to_dict(getattr(lp_obj, attr))
-        del lp_dict['%s_link' % (attr,)]
+    for attr, children in attributes.items():
+        if attr[-1] == '/':
+            # XXX: Hack so I don't have to think about how to differentiate
+            # between collections and entries.
+            attr = attr[:-1]
+            collection = getattr(lp_obj, attr)
+            lp_dict[attr] = [
+                lp_to_dict_expanded(x, children) for x in collection]
+        else:
+            lp_dict[attr] = lp_to_dict_expanded(
+                getattr(lp_obj, attr), children)
     return lp_dict
 
 
 def get_merge_proposals(launchpad, branch_url):
-    for mp in _iter_merge_proposals(launchpad, branch_url):
-        mp_dict = lp_to_dict(mp)
-        mp_dict.update({'reviews': get_reviews(mp)})
-        yield mp_dict
-
-
-def get_reviews(mp):
-    reviews = []
-    for vote in mp.votes:
-        review_dict = lp_to_dict_expanded(vote, ['comment', 'reviewer'])
-        reviews.append(review_dict)
-    return reviews
+    branch = launchpad.branches.getByUrl(url=branch_url)
+    if branch is None:
+        raise UserError("Not a valid branch: %r" % (branch_url,))
+    data = lp_to_dict_expanded(
+        branch, {
+            'landing_candidates/':
+                {'votes/':
+                     {'comment': {},
+                      'reviewer': {}},
+                 'source_branch': {}}})
+    return data['landing_candidates']
 
 
 def main(args):
