@@ -56,7 +56,18 @@ def lp_to_dict(lp_obj):
 
 
 def get_merge_proposals(launchpad, branch_url):
-    return map(lp_to_dict, _iter_merge_proposals(launchpad, branch_url))
+    for mp in _iter_merge_proposals(launchpad, branch_url):
+        mp_dict = lp_to_dict(mp)
+        mp_dict.update({'reviews': get_reviews(mp)})
+        yield mp_dict
+
+
+def get_reviews(mp):
+    reviews = {}
+    for vote in mp.votes:
+        if vote.comment:
+            reviews[vote.reviewer.display_name] = vote.comment.vote
+    return reviews
 
 
 def main(args):
@@ -66,7 +77,7 @@ def main(args):
     service_root = uris.service_roots[args.lp_instance]
     launchpad = get_launchpad(service_root)
     merge_proposals = get_merge_proposals(launchpad, args.branch)
-    json.dump(merge_proposals, output)
+    json.dump(list(merge_proposals), output)
     output.write('\n')
 
 
