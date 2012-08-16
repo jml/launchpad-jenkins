@@ -1,0 +1,10 @@
+A launchpadlib that didn't have stupid object crap, and was instead based on
+functions, lists, and dicts.
+
+All of these assume they have some means of authorized access to the URL
+
+  GET(lp_obj_url) => dict_for_lp_obj_url
+
+  DELETE(lp_obj_url)
+
+  PATCH(lp_obj_url, changes) => new_lp_obj_dict
