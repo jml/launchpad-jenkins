@@ -50,14 +50,25 @@ def _iter_merge_proposals(launchpad, branch_url):
         raise UserError("Not a valid branch: %r" % (branch_url,))
     for b in branch.landing_candidates:
         yield b
+# XXX: I think if I had a function that took a URL (& probably some creds) and
+# returned a from-JSON data structure this would all get much simpler.
 
 
 def lp_to_dict(lp_obj):
+    """Return the dict representation of a Launchpad object."""
     lp_obj._ensure_representation()
     return dict(lp_obj._wadl_resource.representation)
 
 
 def lp_to_dict_expanded(lp_obj, attributes):
+    """Return a dict of a Launchpad object, expanding some linked objects.
+
+    :param lp_obj: A Launchpad object.
+    :param attributes: A dict, representing a tree of attributes to expand.
+        Keys are attributes that refer to other Launchpad objects.  If a key
+        is there, then include the dict representation of that object.  To
+        expand collections, make sure the key ends with '/'.
+    """
     lp_dict = lp_to_dict(lp_obj)
     for attr in attributes:
         lp_dict[attr] = lp_to_dict(getattr(lp_obj, attr))
