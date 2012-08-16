@@ -57,6 +57,14 @@ def lp_to_dict(lp_obj):
     return dict(lp_obj._wadl_resource.representation)
 
 
+def lp_to_dict_expanded(lp_obj, attributes):
+    lp_dict = lp_to_dict(lp_obj)
+    for attr in attributes:
+        lp_dict[attr] = lp_to_dict(getattr(lp_obj, attr))
+        del lp_dict['%s_link' % (attr,)]
+    return lp_dict
+
+
 def get_merge_proposals(launchpad, branch_url):
     for mp in _iter_merge_proposals(launchpad, branch_url):
         mp_dict = lp_to_dict(mp)
@@ -65,10 +73,10 @@ def get_merge_proposals(launchpad, branch_url):
 
 
 def get_reviews(mp):
-    reviews = {}
+    reviews = []
     for vote in mp.votes:
-        if vote.comment:
-            reviews[vote.reviewer.display_name] = vote.comment.vote
+        review_dict = lp_to_dict_expanded(vote, ['comment', 'reviewer'])
+        reviews.append(review_dict)
     return reviews
 
 
