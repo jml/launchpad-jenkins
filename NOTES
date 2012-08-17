@@ -1,10 +1,22 @@
 A launchpadlib that didn't have stupid object crap, and was instead based on
 functions, lists, and dicts.
 
-All of these assume they have some means of authorized access to the URL
+All of these assume they have some means of authorized access to the URL.
+Probably there would be a value object that represented an authorized
+connection, and these would all be methods.
 
+  ;; get the dict representation of an object
   GET(lp_obj_url) => dict_for_lp_obj_url
 
+  ;; delete the object
   DELETE(lp_obj_url)
 
+  ;; change the attributes of the object
   PATCH(lp_obj_url, changes) => new_lp_obj_dict
+
+  ;; call a named method that writes
+  POST(lp_obj_url, method, **args) => data
+
+  ;; call a named method that only gets
+  CALL(lp_obj_url, method, **args) => data
+
